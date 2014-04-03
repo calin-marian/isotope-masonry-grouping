@@ -64,50 +64,57 @@
             		groupOptions = $.extend(defaults, this.options.masonryGroups.groups[currentGroup.groupName]);
 		        	displayMapY = props.displayMap.map(function(column, index){
 						return column.reduce(function(previousValue, element){
-							return previousValue + (element ? 1 : 0); 
+							return previousValue + element;
 						}, 0);
 					}),
 		        	minY = Math.min.apply(Math, displayMapY),
 		        	maxY = Math.max.apply(Math, displayMapY),
-            		startRow = groupOptions.startNewRow ? maxY : minY;
+            		startRow = (groupOptions.startNewRow ? maxY : minY) - 1;
+            		// Make sure startRow is not negative.
+            		if (!startRow) {
+            			startRow = 0;
+            		}
 
         		$.each(currentGroup.elems, function (index, value) {
 		        	var $this  = $(this),
 			            //how many columns does this brick span
 			            colSpan = Math.ceil( $this.outerWidth(true) / props.columnWidth ),
-			            rowSpan = Math.ceil( $this.outerHeight(true) / props.columnWidth );
+			            rowSpan = Math.ceil( $this.outerHeight(true) / props.columnWidth ),
+			            placed = false;
 			        colSpan = Math.min( colSpan, props.cols );
 
 			        // recalculate the min and max places occupied for each column.
 		        	displayMapY = props.displayMap.map(function(column, index){
 						return column.reduce(function(previousValue, element){
-							return previousValue + (element ? 1 : 0);
+							return previousValue + element;
 						}, 0);
 					});
 		        	minY = Math.min.apply(Math, displayMapY);
 		        	maxY = Math.max.apply(Math, displayMapY);
 			        
 			        // First, try to find a position for the brick in the previous Rows
-					for (var row = startRow; row <= maxY - rowSpan; row++) {
-			        	for (var col = 0; col < props.cols - colSpan; col++) {
-							if (instance._masonryGroupsFitsBrick(col, row, colSpan, rowSpan)) {
+		        	for (var col = 0; col < props.cols - colSpan; col++) {
+						for (var row = startRow; row < maxY - rowSpan + 1; row++) {
+							if (!placed && instance._masonryGroupsFitsBrick(col, row, colSpan, rowSpan)) {
 								instance._masonryGroupsPlaceBrick($this, col, row, colSpan, rowSpan);
 								while (instance._masonryGroupsStartRowFull(startRow)) {
 									startRow++;
 								}
-								continue; 
+								placed = true; 
 							}
 						}
 		        	};
 
-		        	//If we didn't place the brick in the previous rows, make room for
-		        	//a new row in the map, and place the brick there
-		        	for (var row = startRow +1; row < startRow + rowSpan; row++) {
-		        		for (var col = 0; col < props.cols; col++) {
-			        		props.displayMap[col][row] = 0;
-		        		}
+		        	if (!placed) {
+			        	//If we didn't place the brick in the previous rows, make room for
+			        	//a new row in the map, and place the brick there
+			        	for (var row = maxY; row < maxY + rowSpan; row++) {
+			        		for (var col = 0; col < props.cols; col++) {
+				        		props.displayMap[col][row] = 0;
+			        		}
+			        	}
+			        	instance._masonryGroupsPlaceBrick($this, 0, maxY, colSpan, rowSpan);
 		        	}
-		        	instance._masonryGroupsPlaceBrick($this, 0, startRow, colSpan, rowSpan);
 
         		});
             }
