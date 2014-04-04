@@ -102,7 +102,6 @@
             while (iteration.conditionCallback(col)) {
               for (var row = startRow; row <= maxY - rowSpan; row++) {
                 if (!placed && instance._masonryGroupsFitsBrick(col, row, colSpan, rowSpan)) {
-                  console.log({row:row, col:col});
                   instance._masonryGroupsPlaceBrick($this, col, row, colSpan, rowSpan);
                   while (instance._masonryGroupsStartRowFull(startRow)) {
                     startRow++;
@@ -119,7 +118,6 @@
                 col = iteration.start;
                 while (iteration.conditionCallback(col)) {
                   if (!placed && instance._masonryGroupsFitsBrick(col, row, colSpan, rowSpan)) {
-                    console.log({row:row, col:col});
                     instance._masonryGroupsPlaceBrick($this, col, row, colSpan, rowSpan);
                     while (instance._masonryGroupsStartRowFull(startRow)) {
                       startRow++;
@@ -140,7 +138,6 @@
                 }
               }
               instance._masonryGroupsPlaceBrick($this, iteration.start, maxY, colSpan, rowSpan);
-              console.log({row:maxY, col:iteration.start});
 
             }
 
