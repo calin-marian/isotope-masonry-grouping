@@ -73,7 +73,6 @@
               minY = 0, //Math.min.apply(Math, displayMapY),
               maxY = Math.max.apply(Math, displayMapY),
               startRow = (clusterOptions.startNewRow ? maxY : minY);
-          console.log(clusterOptions);
 
           $.each(currentCluster.elems, function (index, value) {
             var $this  = $(this),
@@ -99,10 +98,11 @@
             var iteration = instance._masonryGroupsIterations(clusterOptions, 0, props.cols, colSpan),
                 col = iteration.start;
 
-            // First, try to find a position for the brick in the previous Rows
+            // First, try to find a position for the brick in the cluster Rows
             while (iteration.conditionCallback(col)) {
               for (var row = startRow; row <= maxY - rowSpan; row++) {
                 if (!placed && instance._masonryGroupsFitsBrick(col, row, colSpan, rowSpan)) {
+                  console.log({row:row, col:col});
                   instance._masonryGroupsPlaceBrick($this, col, row, colSpan, rowSpan);
                   while (instance._masonryGroupsStartRowFull(startRow)) {
                     startRow++;
@@ -114,6 +114,24 @@
             };
 
             if (!placed) {
+              // Then, try to find a position for the brick in the previous Rows
+              for (var row = startRow; row <= maxY; row++) {
+                col = iteration.start;
+                while (iteration.conditionCallback(col)) {
+                  if (!placed && instance._masonryGroupsFitsBrick(col, row, colSpan, rowSpan)) {
+                    console.log({row:row, col:col});
+                    instance._masonryGroupsPlaceBrick($this, col, row, colSpan, rowSpan);
+                    while (instance._masonryGroupsStartRowFull(startRow)) {
+                      startRow++;
+                    }
+                    placed = true;
+                  }
+                  col = col + iteration.increment;
+                }
+              };
+            }
+
+            if (!placed) {
               //If we didn't place the brick in the previous rows, make room for
               //a new row in the map, and place the brick there
               for (var row = maxY; row <= maxY + rowSpan; row++) {
@@ -122,6 +140,8 @@
                 }
               }
               instance._masonryGroupsPlaceBrick($this, iteration.start, maxY, colSpan, rowSpan);
+              console.log({row:maxY, col:iteration.start});
+
             }
 
           });
@@ -177,7 +197,7 @@
         var sum = 0;
         for (var row = startRow; row < (startRow + rowSpan); row++) {
             for (var column = startColumn; column < (startColumn + colSpan); column++) {
-              sum = sum + this.masonryGroups.displayMap[column][row];
+              sum = sum + (this.masonryGroups.displayMap[column][row] || 0);
             };
         };
         return !sum;
