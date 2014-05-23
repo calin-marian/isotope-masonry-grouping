@@ -13,6 +13,15 @@
                      // if there's no items, use size of container
                      this.width;
 
+          // determine column height
+          var colH = properties && properties.columnHeight ||
+                     // or determine the with from the selector
+                     properties && properties.columnWidthClass && this._masonryGroupsGetColumnHeight() ||
+                     // or use the size of the first item
+                     this.$filteredAtoms.outerHeight(true) ||
+                     // if there's no items, use size of container
+                     this.height;
+
           var cols = Math.floor( this.width / colW );
           cols = Math.max( cols, 1 );
 
@@ -20,6 +29,8 @@
           this.masonryGroups.cols = cols;
           // save the column width in the instance
           this.masonryGroups.columnWidth = colW;
+          // save the column height in the instance
+          this.masonryGroups.columnHeight = colH;
       },
 
       _masonryGroupsReset : function() {
@@ -78,7 +89,7 @@
             var $this  = $(this),
                 //how many columns does this brick span
                 colSpan = Math.ceil( $this.outerWidth(true) / props.columnWidth ),
-                rowSpan = Math.ceil( $this.outerHeight(true) / props.columnWidth ),
+                rowSpan = Math.ceil( $this.outerHeight(true) / props.columnHeight ),
                 placed = false;
 
             // Make sure colSpan is not greater then the number of columns we
@@ -166,7 +177,7 @@
               });
 
         return {
-          height : Math.max.apply( Math, displayMapY ) * this.masonryGroups.columnWidth,
+          height : Math.max.apply( Math, displayMapY ) * this.masonryGroups.columnHeight,
           // fit container to columns that have been used;
           width : (this.masonryGroups.cols - unusedCols) * this.masonryGroups.columnWidth
         };
@@ -188,6 +199,17 @@
         $('.temp-width-class').remove();
 
         return columnWidth;
+      },
+
+      _masonryGroupsGetColumnHeight : function () {
+        var columnHeight = $('<div class="' + this.options.masonryGroups.columnWidthClass + ' temp-height-class"></div>').css({
+          position: "absolute",
+          left: -9999,
+        }).appendTo("body").outerHeight(true);
+
+        $('.temp-height-class').remove();
+
+        return columnHeight;
       },
 
       _masonryGroupsFitsBrick : function(startColumn, startRow, colSpan, rowSpan) {
@@ -216,7 +238,7 @@
         };
 
         var x = startColumn * this.masonryGroups.columnWidth,
-            y = startRow * this.masonryGroups.columnWidth;
+            y = startRow * this.masonryGroups.columnHeight;
 
         this._pushPosition( $brick, x, y );
       },
