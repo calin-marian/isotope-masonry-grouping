@@ -1,6 +1,7 @@
 (function($){
   $.extend( $.Isotope.prototype, {
       _getCenteredMasonryColumns : function() {
+          $(this.element).css("width", "");
           this.width = this.element.width();
           var properties = this.options.masonryGroups;
 
