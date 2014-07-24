@@ -52,7 +52,9 @@
             defaults = {
               align: 'none',
               startNewRow: false,
+              groupBricks: true,
               maxColumns: props.cols,
+              position: false,
             };
 
         // Get all the elements arranged into groups.
@@ -72,11 +74,21 @@
           });
         }
 
+        // Move the clusters that have position to the begining of the list
+        $.each(props.clusters, function(index, cluster) {
+          var clusterOptions = $.extend(clusterDefaults, instance.options.masonryGroups.groups[cluster.groupName]);
+          if (clusterOptions.position) {
+            console.log(cluster);
+            props.clusters.splice(index, 1);
+            props.clusters.unshift(cluster);
+          }
+        });
+
         // Lay the bricks cluster by cluster.
         while (props.clusters.length) {
           var currentCluster = props.clusters.shift(),
               clusterDefaults = $.extend(true, {}, defaults),
-              clusterOptions = $.extend(clusterDefaults, this.options.masonryGroups.groups[currentCluster.groupName]);
+              clusterOptions = $.extend(clusterDefaults, this.options.masonryGroups.groups[currentCluster.groupName]),
               displayMapY = props.displayMap.map(function(column, index){
                 return column.reduce(function(previousValue, element){
                   return previousValue + element;
@@ -84,7 +96,10 @@
               }),
               minY = 0, //Math.min.apply(Math, displayMapY),
               maxY = Math.max.apply(Math, displayMapY),
-              startRow = (clusterOptions.startNewRow ? maxY : minY);
+              options = {
+                startRow: (clusterOptions.startNewRow ? maxY : minY),
+              };
+
 
           $.each(currentCluster.elems, function (index, value) {
             var $this  = $(this),
@@ -107,50 +122,37 @@
             maxY = Math.max.apply(Math, displayMapY);
 
             // determine iteration variables based on group alignment.
-            var iteration = instance._masonryGroupsIterations(clusterOptions, 0, props.cols, colSpan),
-                col = iteration.start;
+            options.iteration = instance._masonryGroupsIterations(clusterOptions, 0, props.cols, colSpan);
+            options.brick = $this;
+            options.colSpan = colSpan;
+            options.rowSpan = rowSpan;
 
-            // First, try to find a position for the brick in the cluster Rows
-            while (iteration.conditionCallback(col)) {
-              for (var row = startRow; row <= maxY - rowSpan; row++) {
-                if (!placed && instance._masonryGroupsFitsBrick(col, row, colSpan, rowSpan)) {
-                  instance._masonryGroupsPlaceBrick($this, col, row, colSpan, rowSpan);
-                  while (instance._masonryGroupsStartRowFull(startRow)) {
-                    startRow++;
-                  }
-                  placed = true;
-                }
-              }
-              col = col + iteration.increment;
-            };
-
-            if (!placed) {
-              // Then, try to find a position for the brick in the previous Rows
-              for (var row = startRow; row <= maxY; row++) {
-                col = iteration.start;
-                while (iteration.conditionCallback(col)) {
-                  if (!placed && instance._masonryGroupsFitsBrick(col, row, colSpan, rowSpan)) {
-                    instance._masonryGroupsPlaceBrick($this, col, row, colSpan, rowSpan);
-                    while (instance._masonryGroupsStartRowFull(startRow)) {
-                      startRow++;
-                    }
-                    placed = true;
-                  }
-                  col = col + iteration.increment;
-                }
-              };
+            if (clusterOptions.position) {
+              placed = placed || instance._masonryGroupsAttemptToPlaceBrick(clusterOptions.position.col, clusterOptions.position.row, options);
             }
 
+            // If the cluster is grouped, try to find a position for the brick
+            // in the cluster Rows.
+            if (clusterOptions.groupBricks) {
+              options.maxRow = maxY - rowSpan;
+              placed = placed || instance._masonryGroupsSearchBrickSpaceByColumn(options);
+
+            }
+
+            // If brick is not placed, try to find a position for the brick in
+            // the previous Rows.
+            options.maxRow = maxY;
+            placed = placed || instance._masonryGroupsSearchBrickSpaceByRow(options);
+
+            // If we didn't place the brick in the previous rows, make room for
+            // a new row in the map, and place the brick there.
             if (!placed) {
-              //If we didn't place the brick in the previous rows, make room for
-              //a new row in the map, and place the brick there
               for (var row = maxY; row <= maxY + rowSpan; row++) {
                 for (var col = 0; col < props.cols; col++) {
                   props.displayMap[col][row] = 0;
                 }
               }
               instance._masonryGroupsPlaceBrick($this, iteration.start, maxY, colSpan, rowSpan);
-
             }
 
           });
@@ -262,6 +264,41 @@
           increment: clusterOptions.align == 'right' ? -1 : 1,
         }
       },
+
+      _masonryGroupsSearchBrickSpaceByRow: function(options) {
+        var placed = false;
+        for (var row = options.startRow; row <= options.maxRow; row++) {
+          var col = options.iteration.start;
+          while (options.iteration.conditionCallback(col)) {
+            placed = placed || this._masonryGroupsAttemptToPlaceBrick(col, row, options);
+            col = col + options.iteration.increment;
+          }
+        };
+        return placed;
+      },
+
+      _masonryGroupsSearchBrickSpaceByColumn: function(options) {
+        var placed = false,
+            col = options.iteration.start;
+        while (options.iteration.conditionCallback(col)) {
+          for (var row = options.startRow; row <= options.maxRow; row++) {
+            placed = placed || this._masonryGroupsAttemptToPlaceBrick(col, row, options);
+          }
+          col = col + options.iteration.increment;
+        };
+        return placed;
+      },
+
+      _masonryGroupsAttemptToPlaceBrick: function(col, row, options) {
+        var fits = this._masonryGroupsFitsBrick(col, row, options.colSpan, options.rowSpan);
+        if (fits) {
+          this._masonryGroupsPlaceBrick(options.brick, col, row, options.colSpan, options.rowSpan);
+          while (this._masonryGroupsStartRowFull(options.startRow)) {
+            options.startRow++;
+          }
+        }
+        return fits;
+      }
 
   });
 })(jQuery)
