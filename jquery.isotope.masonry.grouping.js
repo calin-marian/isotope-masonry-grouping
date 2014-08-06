@@ -152,7 +152,7 @@
                   props.displayMap[col][row] = 0;
                 }
               }
-              instance._masonryGroupsPlaceBrick($this, iteration.start, maxY, colSpan, rowSpan);
+              instance._masonryGroupsPlaceBrick($this, options.iteration.start, maxY, colSpan, rowSpan);
             }
 
           });
