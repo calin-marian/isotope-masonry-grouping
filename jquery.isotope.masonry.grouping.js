@@ -78,7 +78,6 @@
         $.each(props.clusters, function(index, cluster) {
           var clusterOptions = $.extend(clusterDefaults, instance.options.masonryGroups.groups[cluster.groupName]);
           if (clusterOptions.position) {
-            console.log(cluster);
             props.clusters.splice(index, 1);
             props.clusters.unshift(cluster);
           }
