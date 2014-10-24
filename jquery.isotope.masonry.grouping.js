@@ -218,7 +218,7 @@
         var sum = 0;
         for (var row = startRow; row < (startRow + rowSpan); row++) {
             for (var column = startColumn; column < (startColumn + colSpan); column++) {
-              sum = sum + (this.masonryGroups.displayMap[column][row] || 0);
+              sum = sum + this._masonryGroupsGetMapValue(column, row);
             };
         };
         return !sum;
@@ -227,7 +227,7 @@
       _masonryGroupsStartRowFull : function(row) {
         var sum = 0;
         for (var column=0; column < this.masonryGroups.columns; column++) {
-          sum = sum + this.masonryGroups.displayMap[column][row]
+          sum = sum + this._masonryGroupsGetMapValue(column, row);
         }
         return sum == this.masonryGroups.columns;
       },
@@ -297,6 +297,14 @@
           }
         }
         return fits;
+      },
+
+      _masonryGroupsGetMapValue: function(col, row) {
+        if (typeof this.masonryGroups.displayMap[col] == 'undefined') {
+          return 0;
+        }
+
+        return this.masonryGroups.displayMap[col][row] || 0;
       }
 
   });
