@@ -42,13 +42,18 @@ li {
   max-width: 1200px;
 }
 
-.box-1x1 {
+.box-custom .box-inner-wrapper {
+  padding-bottom: 11.9%;
 }
 
 .box-1x2 .box-inner-wrapper{
-  padding-bottom: 136%;
+  padding-bottom: 150%;
 }
 
 .box-2x2 {
   width: 49.99%;
+}
+
+.box-2x2 .box-inner-wrapper{
+  padding-bottom: 70%;
 }

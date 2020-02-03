@@ -117,8 +117,12 @@
 
             console.log({
               element: this,
+              width: instance._masonryGroupsGetWidth($this.get(0)),
+              height: instance._masonryGroupsGetHeight($this.get(0)),
               colSpan: instance._masonryGroupsGetWidth($this.get(0)) / props.columnWidth,
-              rowSpan
+              rowSpan: instance._masonryGroupsGetHeight($this.get(0)) / props.columnHeight,
+              columnWidth: props.columnWidth,
+              columnHeight: props.columnHeight
             });
 
             // Make sure colSpan is not greater then the number of columns we
