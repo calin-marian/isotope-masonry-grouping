@@ -54,6 +54,7 @@
               startNewRow: false,
               groupBricks: true,
               maxColumns: props.cols,
+              startCol: false,
               position: false,
             };
 
@@ -75,13 +76,20 @@
         }
 
         // Move the clusters that have position to the begining of the list
+        var positionClusters = [];
+        var freeClusters = [];
         $.each(props.clusters, function(index, cluster) {
+          var clusterDefaults = $.extend(true, {}, defaults);
           var clusterOptions = $.extend(clusterDefaults, instance.options.masonryGroups.groups[cluster.groupName]);
-          if (clusterOptions.position) {
-            props.clusters.splice(index, 1);
-            props.clusters.unshift(cluster);
+          if (clusterOptions.position || (clusterOptions.startCol !== false)) {
+            positionClusters.push(cluster);
+          }
+          else {
+            freeClusters.push(cluster);
           }
         });
+
+        props.clusters = positionClusters.concat(freeClusters);
 
         // Lay the bricks cluster by cluster.
         while (props.clusters.length) {
@@ -121,7 +129,7 @@
             maxY = Math.max.apply(Math, displayMapY);
 
             // determine iteration variables based on group alignment.
-            options.iteration = instance._masonryGroupsIterations(clusterOptions, 0, props.cols, colSpan);
+            options.iteration = instance._masonryGroupsIterations(clusterOptions, clusterOptions.startCol || 0, props.cols, colSpan);
             options.brick = $this;
             options.colSpan = colSpan;
             options.rowSpan = rowSpan;
@@ -193,25 +201,11 @@
       },
 
       _masonryGroupsGetColumnWidth : function () {
-        var columnWidth = $('<div class="' + this.options.masonryGroups.columnWidthClass + ' temp-width-class"></div>').css({
-          position: "absolute",
-          left: -9999,
-        }).appendTo("body").outerWidth(true);
-
-        $('.temp-width-class').remove();
-
-        return columnWidth;
+        return $('.' + this.options.masonryGroups.columnWidthClass).first().outerWidth(true);
       },
 
       _masonryGroupsGetColumnHeight : function () {
-        var columnHeight = $('<div class="' + this.options.masonryGroups.columnWidthClass + ' temp-height-class"></div>').css({
-          position: "absolute",
-          left: -9999,
-        }).appendTo("body").outerHeight(true);
-
-        $('.temp-height-class').remove();
-
-        return columnHeight;
+        return $('.' + this.options.masonryGroups.columnWidthClass).first().outerHeight(true);
       },
 
       _masonryGroupsFitsBrick : function(startColumn, startRow, colSpan, rowSpan) {
