@@ -111,9 +111,15 @@
           $.each(currentCluster.elems, function (index, value) {
             var $this  = $(this),
                 //how many columns does this brick span
-                colSpan = Math.ceil( $this.outerWidth(true) / props.columnWidth ),
-                rowSpan = Math.ceil( $this.outerHeight(true) / props.columnHeight ),
+                colSpan = Math.ceil( (instance._masonryGroupsGetWidth($this.get(0)) / props.columnWidth).toFixed(3) ),
+                rowSpan = Math.ceil( (instance._masonryGroupsGetHeight($this.get(0)) / props.columnHeight).toFixed(3) ),
                 placed = false;
+
+            console.log({
+              element: this,
+              colSpan: instance._masonryGroupsGetWidth($this.get(0)) / props.columnWidth,
+              rowSpan
+            });
 
             // Make sure colSpan is not greater then the number of columns we
             // have available.
@@ -173,12 +179,12 @@
             i = this.masonryGroups.cols;
 
         // count unused columns
-        while ( --i ) {
-          if ( this.masonryGroups.displayMap[i] !== 0 ) {
-            break;
-          }
-          unusedCols++;
-        }
+        // while ( --i ) {
+        //   if ( this.masonryGroups.displayMap[i] !== 0 ) {
+        //     break;
+        //   }
+        //   unusedCols++;
+        // }
 
         var displayMapY = self.masonryGroups.displayMap.map(function(column, index){
                 return column.reduce(function(previousValue, element){
@@ -189,23 +195,46 @@
         return {
           height : Math.max.apply( Math, displayMapY ) * this.masonryGroups.columnHeight,
           // fit container to columns that have been used;
-          width : (this.masonryGroups.cols - unusedCols) * this.masonryGroups.columnWidth
+          width : '100%'
         };
       },
 
       _masonryGroupsResizeChanged : function() {
-        var prevColCount = this.masonryGroups.cols;
-         // get updated colCount
+        // get updated colCount
         this._getCenteredMasonryColumns();
-        return ( this.masonryGroups.cols !== prevColCount );
+        return true;
       },
 
       _masonryGroupsGetColumnWidth : function () {
-        return $('.' + this.options.masonryGroups.columnWidthClass).first().outerWidth(true);
+        return this._masonryGroupsGetWidth($('.' + this.options.masonryGroups.columnWidthClass).get(0));
       },
 
       _masonryGroupsGetColumnHeight : function () {
-        return $('.' + this.options.masonryGroups.columnWidthClass).first().outerHeight(true);
+        return this._masonryGroupsGetHeight($('.' + this.options.masonryGroups.columnWidthClass).get(0));
+      },
+
+      _masonryGroupsGetWidth : function (element) {
+        var rect = element.getBoundingClientRect();
+
+        if (rect.width) {
+          // `width` is available for IE9+
+          return rect.width;
+        }
+
+        // Calculate width for IE8 and below
+        return rect.right - rect.left;
+      },
+
+      _masonryGroupsGetHeight : function (element) {
+        var rect = element.getBoundingClientRect();
+
+        if (rect.height) {
+          // `height` is available for IE9+
+          return rect.height;
+        }
+
+        // Calculate height for IE8 and below
+        return rect.bottom - rect.top;
       },
 
       _masonryGroupsFitsBrick : function(startColumn, startRow, colSpan, rowSpan) {

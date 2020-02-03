@@ -3,10 +3,10 @@
 }
 
 .box {
-  background: #e7e7e8;
-  width: 25%;
+  width: 24.99%;
   height: auto;
-  border: 1px solid red;
+  padding: 15px;
+  background: #838383;
 }
 
 .box-inner-wrapper {
@@ -17,6 +17,8 @@
 }
 
 .box-inner-inner-wrapper {
+  background: #e7e7e8;
+  border: 1px solid red;
   position: absolute;
   top: 0;
   right: 0;
@@ -48,5 +50,5 @@ li {
 }
 
 .box-2x2 {
-  width: 50%;
+  width: 49.99%;
 }

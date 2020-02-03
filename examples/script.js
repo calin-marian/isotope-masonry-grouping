@@ -1,7 +1,7 @@
 (function($){
 	$(document).ready(function(){
 		$('#container').isotope({
-		itemSelector : '.box',
+    itemSelector : '.box',
 		animationOptions: {
 			duration: 400,
 			easing: 'swing',

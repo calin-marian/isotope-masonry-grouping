@@ -7,9 +7,10 @@
 			easing: 'swing',
 			queue: false
 		},
-		animationEngine: 'jquery',
+		animationEngine: 'best-available',
 		layoutMode: 'masonryGroups',
 		masonryGroups: {
+			columnWidthClass: 'box-1x1',
 			getGroupData: function($element) {
 				return $element.data('group');
 			},
